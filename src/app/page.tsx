@@ -23,23 +23,20 @@ export default function LoginPage() {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const [error, setError] = useState("");
-
   const onSubmit = async (data: LoginFormValues) => {
-    setError("");
-
     try {
       const response = await loginApi(data);
 
       if (response?.message === "Login successful") {
-        dispatch(setAuth({ token: response.user.token }));
+        console.log(response);
+        dispatch(
+          setAuth({ token: response.user.token, name: response.user.name })
+        );
+
         router.push("/dashboard");
-      } else {
-        setError(response?.message || "Invalid email or password");
       }
     } catch (err: any) {
       console.error("Login error:", err);
-      setError("Something went wrong. Please try again.");
     }
   };
 

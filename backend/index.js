@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { connectDB } from "./src/config/db.js";
 import loginRoutes from "./src/modules/login/route.js";
+import patientRoutes from "./src/modules/patient/route.js";
 
 dotenv.config();
 connectDB();
@@ -15,6 +16,7 @@ app.use(cors());
 
 // Routes
 app.use("/api", loginRoutes);
+app.use("/api", patientRoutes);
 
 const PORT = process.env.PORT || 3000;
 // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

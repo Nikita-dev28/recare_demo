@@ -1,12 +1,14 @@
 "use client";
 
+import { useSelector } from "react-redux";
 import Header from "../../components/common/Header";
 import { useRouter } from "next/navigation";
 
 export default function Dashboard() {
   const router = useRouter();
 
-  // Inline StatCard component
+  const { name } = useSelector((state: any) => state.auth);
+
   const StatCard = ({
     label,
     value,
@@ -33,7 +35,7 @@ export default function Dashboard() {
       <div className="p-8 space-y-10">
         {/* Welcome Section */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Welcome, Admin</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Welcome, {name}</h2>
           <p className="text-gray-500 text-sm">System monitoring overview</p>
         </div>
 

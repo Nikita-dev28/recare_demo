@@ -10,3 +10,14 @@ export const loginApi = async (data) => {
     throw error;
   }
 };
+
+//Admin Login
+export const patientListApi = async () => {
+  try {
+    const response = await getMethod("/patients");
+    return response;
+  } catch (error) {
+    console.error("Patient List API Error:", error);
+    throw error;
+  }
+};
