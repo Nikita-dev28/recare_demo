@@ -30,7 +30,6 @@ export default function LoginPage() {
 
     try {
       const response = await loginApi(data);
-      console.log(response);
 
       if (response?.message === "Login successful") {
         dispatch(setAuth({ token: response.user.token }));

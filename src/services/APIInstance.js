@@ -11,7 +11,12 @@ const SECRET_KEY = process.env.NEXT_PUBLIC_ENCRYPT_SECRET;
 export const storeToken = (token) => {
   const tokenString = typeof token === "string" ? token : token?.token || "";
   const encrypted = CryptoJS.AES.encrypt(tokenString, SECRET_KEY).toString();
-  setCookie("authToken", encrypted);
+  setCookie("authToken", encrypted, {
+    path: "/",
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
 };
 
 export const getAuthToken = () => {
@@ -25,7 +30,7 @@ export const getAuthToken = () => {
 };
 
 export const removeToken = () => {
-  deleteCookie("token", { path: "/" });
+  deleteCookie("authToken", { path: "/" });
 };
 
 export function getDeviceToken() {
@@ -81,7 +86,7 @@ export const setupInterceptors = (store) => {
     const state = store.getState();
 
     // Get JWT token from Redux or Cookie
-    const token = state?.user?.token || getAuthToken();
+    const token = state?.auth?.token || getAuthToken();
 
     if (token) {
       config.headers["access-token"] = token;
