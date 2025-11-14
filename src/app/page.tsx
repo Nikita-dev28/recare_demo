@@ -28,7 +28,6 @@ export default function LoginPage() {
       const response = await loginApi(data);
 
       if (response?.message === "Login successful") {
-        console.log(response);
         dispatch(
           setAuth({ token: response.user.token, name: response.user.name })
         );

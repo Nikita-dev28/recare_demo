@@ -1,4 +1,3 @@
-// /apiInstance.js
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { setCookie, getCookie, deleteCookie } from "cookies-next";
@@ -7,26 +6,30 @@ import { clearUserData } from "@/store/slices/authSlice";
 
 const SECRET_KEY = process.env.NEXT_PUBLIC_ENCRYPT_SECRET;
 
-// Token Functions using Cookie
 export const storeToken = (token) => {
-  const tokenString = typeof token === "string" ? token : token?.token || "";
-  const encrypted = CryptoJS.AES.encrypt(tokenString, SECRET_KEY).toString();
+  console.log(" Storing token:", token);
+  if (!token) return;
+
+  const encrypted = CryptoJS.AES.encrypt(token, SECRET_KEY).toString();
+
   setCookie("authToken", encrypted, {
     path: "/",
-    httpOnly: false,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
 };
 
 export const getAuthToken = () => {
-  const encrypted = getCookie("token");
+  const encrypted = getCookie("authToken");
   if (!encrypted) return null;
 
-  const decrypted = CryptoJS.AES.decrypt(encrypted, SECRET_KEY).toString(
-    CryptoJS.enc.Utf8
-  );
-  return decrypted;
+  try {
+    return CryptoJS.AES.decrypt(encrypted, SECRET_KEY).toString(
+      CryptoJS.enc.Utf8
+    );
+  } catch {
+    return null;
+  }
 };
 
 export const removeToken = () => {
@@ -34,19 +37,19 @@ export const removeToken = () => {
 };
 
 export function getDeviceToken() {
-  try {
-    const key = process.env.NEXT_PUBLIC_DEVICE_TOKEN;
-    let deviceToken = getCookie(key);
-    if (!deviceToken) {
-      deviceToken = crypto?.randomUUID?.() || uuidv4();
+  const key = process.env.NEXT_PUBLIC_DEVICE_TOKEN;
 
-      setCookie(key, deviceToken);
-    }
-    return deviceToken;
-  } catch (e) {
-    console.error("getDeviceToken error", e);
-    return uuidv4();
+  let deviceToken = getCookie(key);
+  if (!deviceToken) {
+    deviceToken = uuidv4();
+    setCookie(key, deviceToken, {
+      path: "/",
+      secure: true,
+      sameSite: "strict",
+    });
   }
+
+  return deviceToken;
 }
 
 export function removeDeviceToken() {
@@ -55,41 +58,34 @@ export function removeDeviceToken() {
 }
 
 function getDeviceId() {
-  let deviceId = getCookie(process.env.NEXT_PUBLIC_DEVICE_ID);
-  if (!deviceId) {
-    deviceId = crypto?.randomUUID?.() || uuidv4();
-    setCookie(process.env.NEXT_PUBLIC_DEVICE_ID, deviceId);
+  const key = process.env.NEXT_PUBLIC_DEVICE_ID;
+
+  let id = getCookie(key);
+  if (!id) {
+    id = uuidv4();
+    setCookie(key, id);
   }
-  return deviceId;
+  return id;
 }
 
 function getLanguage() {
-  const lang = getCookie("language");
-  if (lang) return lang;
-  return "english";
+  return getCookie("language") || "english";
 }
 
-//  Create Axios Instance
 export const apiInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  withCredentials: false,
   headers: {
     "Content-Type": "application/json",
     "api-key": process.env.NEXT_PUBLIC_API_KEY,
   },
 });
 
-// ✅ Axios Interceptors
 export const setupInterceptors = (store) => {
-  // Single request interceptor
   apiInstance.interceptors.request.use((config) => {
-    const state = store.getState();
+    const jwtToken = getAuthToken();
 
-    // Get JWT token from Redux or Cookie
-    const token = state?.auth?.token || getAuthToken();
-
-    if (token) {
-      config.headers["access-token"] = token;
+    if (jwtToken) {
+      config.headers["access-token"] = jwtToken;
     }
 
     config.headers["device-id"] = getDeviceId();
@@ -100,7 +96,6 @@ export const setupInterceptors = (store) => {
     return config;
   });
 
-  // Response interceptor
   apiInstance.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -109,6 +104,7 @@ export const setupInterceptors = (store) => {
         removeDeviceToken();
         store.dispatch(clearUserData());
       }
+
       return Promise.reject(error);
     }
   );

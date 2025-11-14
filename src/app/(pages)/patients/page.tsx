@@ -26,7 +26,6 @@ export default function PatientsPage() {
   const fetchCustomerList = async () => {
     try {
       const res = await patientListApi();
-      console.log("Patient List Response:", res.data?.data);
       if (res?.data?.success) {
         setPatientList(res.data.data || []);
       }

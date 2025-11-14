@@ -2,12 +2,12 @@ import { removeToken, storeToken } from "@/services/APIInstance";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
-  token: string | null;
+  isAuthenticated: boolean;
   name: string | null;
 }
 
 const initialState: AuthState = {
-  token: null,
+  isAuthenticated: false,
   name: null,
 };
 
@@ -15,15 +15,14 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setAuth: (
-      state,
-      action: PayloadAction<{ token: string; name: string }>
-    ) => {
-      storeToken(action.payload.token);
+    setAuth: (state, action) => {
+      storeToken(action.payload.token); // ONLY cookie
+      state.isAuthenticated = true;
       state.name = action.payload.name;
     },
 
     clearUserData: (state) => {
+      state.isAuthenticated = false;
       state.name = null;
       removeToken();
     },

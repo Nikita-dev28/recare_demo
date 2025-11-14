@@ -4,7 +4,6 @@ import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import { encryptTransform } from "redux-persist-transform-encrypt";
-
 import authReducer from "./slices/authSlice";
 
 const rootReducer = combineReducers({
@@ -14,10 +13,11 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["auth"],
+  whitelist: [],
+  blacklist: ["auth"],
   transforms: [
     encryptTransform({
-      secretKey: process.env.NEXT_PUBLIC_PERSIST_SECRET || "default-key",
+      secretKey: process.env.NEXT_PUBLIC_ENCRYPT_SECRET || "default-key",
       onError: (err) => console.error("Encryption error:", err),
     }),
   ],
@@ -38,6 +38,5 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-// ✅ TypeScript helpers
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

@@ -20,7 +20,7 @@ export const Patient = mongoose.model("Patient", patientSchema);
 // Service: fetch all patients
 export const getAllPatients = async () => {
   try {
-    const patients = await Patient.find().sort({ createdAt: -1 });
+    const patients = await Patient.find();
     return patients;
   } catch (error) {
     throw new Error("Error fetching patient list: " + error.message);
